@@ -4,7 +4,9 @@ angular.module('angularMapbox', []);
 angular.module('angularMapbox').directive('featureLayer', function() {
   return {
     restrict: 'E',
+    transclude: true,
     require: '^mapbox',
+    scope: true,
     link: function(scope, element, attrs, controller) {
       if(attrs.data) {
         controller.getMap().then(function(map) {
@@ -17,6 +19,24 @@ angular.module('angularMapbox').directive('featureLayer', function() {
           var featureLayer = L.mapbox.featureLayer().addTo(map);
           featureLayer.loadURL(attrs.url);
           controller.$scope.featureLayers.push(featureLayer);
+        });
+      } else if(scope.geojson) {
+        //scope.$watch('geojson', function (newval, oldval) {
+        scope.$watch('geojson', function() {
+          console.log('geojson has been updated');
+          console.log(scope.geojson);
+          controller.getMap().then(function(map) {
+            var featureLayer = L.mapbox.featureLayer(scope.geojson);
+            featureLayer.setStyle({
+              "color": "#ff7800",
+              "weight": 5,
+              "opacity": 0.2
+            });
+            featureLayer.addTo(map);
+            //map.fitBounds(featureLayer.getBounds());
+
+            controller.$scope.featureLayers.push(featureLayer);
+          });
         });
       }
     }
