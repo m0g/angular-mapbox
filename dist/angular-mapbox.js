@@ -14,14 +14,18 @@ angular.module('angularMapbox').directive('featureLayer', function() {
           var featureLayer = L.mapbox.featureLayer(geojsonObject).addTo(map);
           controller.$scope.featureLayers.push(featureLayer);
         });
+
       } else if(attrs.url) {
         controller.getMap().then(function(map) {
           var featureLayer = L.mapbox.featureLayer().addTo(map);
           featureLayer.loadURL(attrs.url);
+          featureLayer.on('ready', function() {
+            map.fitBounds(featureLayer.getBounds());
+          });
           controller.$scope.featureLayers.push(featureLayer);
         });
+
       } else if(scope.geojson) {
-        //scope.$watch('geojson', function (newval, oldval) {
         scope.$watch('geojson', function() {
           console.log('geojson has been updated');
           console.log(scope.geojson);
@@ -33,8 +37,10 @@ angular.module('angularMapbox').directive('featureLayer', function() {
               "opacity": 0.2
             });
             featureLayer.addTo(map);
-            //map.fitBounds(featureLayer.getBounds());
 
+            featureLayer.on('ready', function() {
+              map.fitBounds(featureLayer.getBounds());
+            });
             controller.$scope.featureLayers.push(featureLayer);
           });
         });
