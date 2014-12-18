@@ -1,6 +1,5 @@
 angular.module('angularMapbox', []);
 
-
 angular.module('angularMapbox').directive('featureLayer', function() {
   return {
     restrict: 'E',

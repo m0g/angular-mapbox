@@ -64,4 +64,3 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     }
   };
 });
-
