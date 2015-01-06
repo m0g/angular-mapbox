@@ -68,15 +68,17 @@ angular.module('angularMapbox').directive('featureLayer', function() {
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer(scope.geojson);
 
-            featureLayer.setStyle({
-              "color": "#ff7800",
-              "weight": 5,
-              "opacity": 0.2
-            });
-
             featureLayer.addTo(map);
-            map.fitBounds(featureLayer.getBounds());
+
+            try {
+              map.fitBounds(featureLayer.getBounds());
+            } catch(e) {
+              return false;
+            }
+
             controller.$scope.featureLayers.push(featureLayer);
+
+            featureClickListener(featureLayer, map, controller.$scope);
           });
         });
       }
@@ -84,4 +86,17 @@ angular.module('angularMapbox').directive('featureLayer', function() {
   };
 });
 
+var regionWards = null;
+var featureClickListener = function(featureLayer, map, scope) {
+  featureLayer.on({
+    click: function(e) {
+      var url = e.layer.feature.properties.url;
+      var region = L.mapbox.featureLayer(e.layer.feature);
+      if (regionWards) regionWards.clearLayers();
+      regionWards = L.mapbox.featureLayer(url);
 
+      regionWards.addTo(map);
+      map.fitBounds(region.getBounds());
+    }
+  });
+};
