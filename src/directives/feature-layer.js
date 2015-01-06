@@ -67,16 +67,15 @@ angular.module('angularMapbox').directive('featureLayer', function() {
           console.log(scope.geojson);
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer(scope.geojson);
+
             featureLayer.setStyle({
               "color": "#ff7800",
               "weight": 5,
               "opacity": 0.2
             });
-            featureLayer.addTo(map);
 
-            featureLayer.on('ready', function() {
-              map.fitBounds(featureLayer.getBounds());
-            });
+            featureLayer.addTo(map);
+            map.fitBounds(featureLayer.getBounds());
             controller.$scope.featureLayers.push(featureLayer);
           });
         });

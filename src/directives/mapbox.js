@@ -7,7 +7,15 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     scope: true,
     replace: true,
     link: function(scope, element, attrs) {
-      scope.map = L.mapbox.map(element[0], attrs.mapId);
+      if (attrs.hasOwnProperty('zoomControl'))
+        var zoomControl = (attrs.zoomControl === 'true');
+      else
+        var zoomControl = true;
+
+      scope.map = L.mapbox.map(element[0], attrs.mapId, {
+        zoomControl: zoomControl
+      });
+
       _mapboxMap.resolve(scope.map);
 
       var mapWidth = attrs.width || 500;
@@ -41,6 +49,16 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
         scope.map.on('zoomend', function() {
           scope[attrs.onZoom](scope.map.getBounds());
         });
+      }
+
+      if (!zoomControl) {
+        console.log('hi!');
+        scope.map.dragging.disable();
+        scope.map.touchZoom.disable();
+        scope.map.doubleClickZoom.disable();
+        scope.map.scrollWheelZoom.disable();
+
+        if (scope.map.tap) scope.map.tap.disable();
       }
     },
     template: '<div class="angular-mapbox-map" ng-transclude></div>',
