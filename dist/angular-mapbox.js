@@ -1,6 +1,40 @@
 angular.module('angularMapbox', []);
 
 
+angular.module('angularMapbox').directive('backButton', function() {
+  return {
+    restrict: 'E',
+    require: '^mapbox',
+    scope: true,
+    template: '<a class="back" ng-click="back()" ng-show="show"><i class="fa fa-times"></i></a>',
+    controller: function($scope) {
+      var parent = $scope.$parent.$parent;
+
+      $scope.show = false;
+
+      parent.$watch('showBack', function() {
+        $scope.show = parent.showBack;
+      });
+
+      $scope.back = function() {
+        parent.showBack = false;
+
+        parent.getMap().then(function(map) {
+          var region = parent.featureLayers[0];
+
+          parent.featureLayers.forEach(function(layer, index) {
+            if (index > 0) layer.clearLayers();
+          });
+
+          map.fitBounds(region.getBounds());
+        });
+      };
+
+      this.$scope = $scope;
+    }
+  }
+});
+
 angular.module('angularMapbox').directive('featureLayer', function() {
   return {
     restrict: 'E',
@@ -8,7 +42,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
     require: '^mapbox',
     scope: true,
     link: function(scope, element, attrs, controller) {
-      console.log(attrs);
       if(attrs.data) {
         controller.getMap().then(function(map) {
           var geojsonObject = scope.$eval(attrs.data);
@@ -32,7 +65,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
         scope.$watch('radio', function() {
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer().addTo(map);
-            console.log(scope.radio.slug);
             featureLayer.loadURL('/coverages/' + scope.radio.slug + '.geojson');
             featureLayer.on('ready', function() {
               map.fitBounds(featureLayer.getBounds());
@@ -42,7 +74,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
         });
 
       } else if (attrs.scope) {
-        console.log('passing a scope');
         scope.$watch(attrs.scope, function(geojson) {
           controller.getMap().then(function(map) {
             if (!controller.$scope.hasOwnProperty('geojsonLayer')) {
@@ -59,15 +90,12 @@ angular.module('angularMapbox').directive('featureLayer', function() {
 
             map.fitBounds(controller.$scope.geojsonLayer.getBounds());
 
-            console.log(controller.$scope.geojsonLayer);
           });
         });
 
 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
-          console.log('geojson has been updated');
-          console.log(scope.geojson);
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer(scope.geojson);
 
@@ -93,12 +121,17 @@ var regionWards = null;
 var featureClickListener = function(featureLayer, map, scope) {
   featureLayer.on({
     click: function(e) {
+      scope.$apply(function() {
+        scope.showBack = true;
+      });
+
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
       if (regionWards) regionWards.clearLayers();
-      regionWards = L.mapbox.featureLayer(url);
 
+      regionWards = L.mapbox.featureLayer(url);
       regionWards.addTo(map);
+      scope.featureLayers.push(regionWards);
       map.fitBounds(region.getBounds());
     }
   });
@@ -171,11 +204,21 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     controller: function($scope) {
       $scope.markers = [];
       $scope.featureLayers = [];
+      $scope.showBack = false;
 
       _mapboxMap = $q.defer();
       $scope.getMap = this.getMap = function() {
         return _mapboxMap.promise;
       };
+
+      //$scope.back = function() {
+      //  $scope.show = false;
+
+      //  $scope.getMap().then(function(map) {
+      //    var region = parent.featureLayers[0];
+      //    map.fitBounds(region.getBounds());
+      //  });
+      //};
 
       if(L.MarkerClusterGroup) {
         $scope.clusterGroup = new L.MarkerClusterGroup();

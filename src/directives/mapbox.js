@@ -65,11 +65,21 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     controller: function($scope) {
       $scope.markers = [];
       $scope.featureLayers = [];
+      $scope.showBack = false;
 
       _mapboxMap = $q.defer();
       $scope.getMap = this.getMap = function() {
         return _mapboxMap.promise;
       };
+
+      //$scope.back = function() {
+      //  $scope.show = false;
+
+      //  $scope.getMap().then(function(map) {
+      //    var region = parent.featureLayers[0];
+      //    map.fitBounds(region.getBounds());
+      //  });
+      //};
 
       if(L.MarkerClusterGroup) {
         $scope.clusterGroup = new L.MarkerClusterGroup();

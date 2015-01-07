@@ -5,7 +5,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
     require: '^mapbox',
     scope: true,
     link: function(scope, element, attrs, controller) {
-      console.log(attrs);
       if(attrs.data) {
         controller.getMap().then(function(map) {
           var geojsonObject = scope.$eval(attrs.data);
@@ -29,7 +28,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
         scope.$watch('radio', function() {
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer().addTo(map);
-            console.log(scope.radio.slug);
             featureLayer.loadURL('/coverages/' + scope.radio.slug + '.geojson');
             featureLayer.on('ready', function() {
               map.fitBounds(featureLayer.getBounds());
@@ -39,7 +37,6 @@ angular.module('angularMapbox').directive('featureLayer', function() {
         });
 
       } else if (attrs.scope) {
-        console.log('passing a scope');
         scope.$watch(attrs.scope, function(geojson) {
           controller.getMap().then(function(map) {
             if (!controller.$scope.hasOwnProperty('geojsonLayer')) {
@@ -56,15 +53,12 @@ angular.module('angularMapbox').directive('featureLayer', function() {
 
             map.fitBounds(controller.$scope.geojsonLayer.getBounds());
 
-            console.log(controller.$scope.geojsonLayer);
           });
         });
 
 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
-          console.log('geojson has been updated');
-          console.log(scope.geojson);
           controller.getMap().then(function(map) {
             var featureLayer = L.mapbox.featureLayer(scope.geojson);
 
@@ -90,12 +84,17 @@ var regionWards = null;
 var featureClickListener = function(featureLayer, map, scope) {
   featureLayer.on({
     click: function(e) {
+      scope.$apply(function() {
+        scope.showBack = true;
+      });
+
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
       if (regionWards) regionWards.clearLayers();
-      regionWards = L.mapbox.featureLayer(url);
 
+      regionWards = L.mapbox.featureLayer(url);
       regionWards.addTo(map);
+      scope.featureLayers.push(regionWards);
       map.fitBounds(region.getBounds());
     }
   });
