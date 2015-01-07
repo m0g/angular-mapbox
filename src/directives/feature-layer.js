@@ -92,12 +92,35 @@ var featureClickListener = function(featureLayer, map, scope) {
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
+
+      var mask = e.layer.feature;
+      mask.geometry.coordinates = [
+        // the world
+        [
+          [-180, -90],
+          [-180, 90],
+          [180, 90],
+          [180, -90],
+          [-180, -90]
+        ],
+        // the region
+        mask.geometry.coordinates[0]
+      ];
+
+      var maskLayer = L.geoJson(mask, {
+        fillOpacity: 0.7,
+        fillColor: '#fff',
+        weight: 0
+      }).addTo(map);
+
       if (regionWards) regionWards.clearLayers();
 
       regionWards = L.mapbox.featureLayer(url);
       regionWards.addTo(map);
-      scope.featureLayers.push(regionWards);
       map.fitBounds(region.getBounds());
+
+      scope.featureLayers.push(maskLayer);
+      scope.featureLayers.push(regionWards);
     }
   });
 };
