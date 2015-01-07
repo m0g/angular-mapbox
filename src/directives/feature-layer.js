@@ -84,6 +84,8 @@ var regionWards = null;
 var featureClickListener = function(featureLayer, map, scope) {
   featureLayer.on({
     click: function(e) {
+      if (typeof(e.layer.feature) == 'undefined') return false;
+
       scope.$apply(function() {
         scope.showBack = true;
       });
