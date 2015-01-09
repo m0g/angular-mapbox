@@ -3,7 +3,7 @@ angular.module('angularMapbox').directive('backButton', function() {
     restrict: 'E',
     require: '^mapbox',
     scope: true,
-    template: '<a class="back" ng-click="back()" ng-show="show"><i class="fa fa-times"></i></a>',
+    template: '<a class="back md-fab md-primary md-default-theme md-cyan-theme md-button" ng-click="back()" ng-show="show"><i class="fa fa-times"></i></a>',
     controller: function($scope) {
       var parent = $scope.$parent.$parent;
 
