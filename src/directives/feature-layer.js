@@ -120,6 +120,9 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
       $mdToast.hide(toast);
     },
     click: function(e) {
+      // Force the popup to close
+      e.layer.closePopup();
+
       if (typeof(e.layer.feature) == 'undefined') return false;
 
       scope.$apply(function() {
