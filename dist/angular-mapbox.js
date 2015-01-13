@@ -6,7 +6,7 @@ angular.module('angularMapbox').directive('backButton', function() {
     restrict: 'E',
     require: '^mapbox',
     scope: true,
-    template: '<a class="back" ng-click="back()" ng-show="show"><i class="fa fa-times"></i></a>',
+    template: '<a class="back md-fab md-primary md-default-theme md-cyan-theme md-button" ng-click="back()" ng-show="show"><i class="fa fa-times"></i></a>',
     controller: function($scope) {
       var parent = $scope.$parent.$parent;
 
@@ -35,7 +35,7 @@ angular.module('angularMapbox').directive('backButton', function() {
   }
 });
 
-angular.module('angularMapbox').directive('featureLayer', function() {
+angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function($mdToast) {
   return {
     restrict: 'E',
     transclude: true,
@@ -109,17 +109,53 @@ angular.module('angularMapbox').directive('featureLayer', function() {
 
             controller.$scope.featureLayers.push(featureLayer);
 
-            featureClickListener(featureLayer, map, controller.$scope);
+            //featureHoverTooltip(featureLayer, $mdToast);
+            featureListener(featureLayer, map, controller.$scope, $mdToast);
           });
         });
       }
     }
   };
-});
+}]);
 
 var regionWards = null;
-var featureClickListener = function(featureLayer, map, scope) {
+
+//var featureHoverTooltip = function(featureLayer, $mdToast) {
+//  var toast = null;
+
+//  featureLayer.on('mouseover', function(e) {
+//    if (typeof(e.layer.feature) == 'undefined') return false;
+
+//    toast = $mdToast.simple()
+//        .content(e.layer.feature.properties.title)
+//        .position('top right')
+//        .hideDelay(0)
+
+//    $mdToast.show(toast);
+//  });
+
+//  featureLayer.on('mouseout', function(e) {
+//    $mdToast.hide(toast);
+//  });
+//},
+
+var featureListener = function(featureLayer, map, scope, $mdToast) {
+  var toast = null;
+
   featureLayer.on({
+    mouseover: function(e) {
+      if (typeof(e.layer.feature) == 'undefined') return false;
+
+      toast = $mdToast.simple()
+          .content(e.layer.feature.properties.title)
+          .position('top right')
+          .hideDelay(0)
+
+      $mdToast.show(toast);
+    },
+    mouseout: function(e) {
+      $mdToast.hide(toast);
+    },
     click: function(e) {
       if (typeof(e.layer.feature) == 'undefined') return false;
 
@@ -131,6 +167,7 @@ var featureClickListener = function(featureLayer, map, scope) {
       var region = L.mapbox.featureLayer(e.layer.feature);
 
       var mask = e.layer.feature;
+      console.log(mask.geometry.type);
       mask.geometry.coordinates = [
         // the world
         [
@@ -158,6 +195,8 @@ var featureClickListener = function(featureLayer, map, scope) {
 
       scope.featureLayers.push(maskLayer);
       scope.featureLayers.push(regionWards);
+
+      return false;
     }
   });
 };

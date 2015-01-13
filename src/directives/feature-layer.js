@@ -130,6 +130,7 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
       var region = L.mapbox.featureLayer(e.layer.feature);
 
       var mask = e.layer.feature;
+      console.log(mask.geometry.type);
       mask.geometry.coordinates = [
         // the world
         [
