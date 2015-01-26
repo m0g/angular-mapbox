@@ -116,6 +116,9 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
 
       $mdToast.show(toast);
     },
+    keyboard: function(e) {
+      console.log('keyboardyboard');
+    },
     mouseout: function(e) {
       $mdToast.hide(toast);
     },
@@ -131,9 +134,8 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
-
       var mask = e.layer.feature;
-      console.log(mask.geometry.type);
+
       mask.geometry.coordinates = [
         // the world
         [
