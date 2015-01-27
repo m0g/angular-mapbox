@@ -4,10 +4,8 @@ angular.module('angularMapbox').directive('legend', function() {
     require: '^mapbox',
     scope: true,
     link: function(scope, element, attrs, controller) {
-      console.log('Legendi');
       scope.$watch('legend', function() {
         controller.getMap().then(function(map) {
-          console.log(scope.legend);
           if (typeof(scope.legend) != 'undefined')
             map.legendControl.addLegend(getLegendHTML(scope.legend));
         });

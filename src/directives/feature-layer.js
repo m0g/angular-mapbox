@@ -72,7 +72,6 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 
             controller.$scope.featureLayers.push(featureLayer);
 
-            //featureHoverTooltip(featureLayer, $mdToast);
             featureListener(featureLayer, map, controller.$scope, $mdToast);
           });
         });
@@ -82,25 +81,6 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 }]);
 
 var regionWards = null;
-
-//var featureHoverTooltip = function(featureLayer, $mdToast) {
-//  var toast = null;
-
-//  featureLayer.on('mouseover', function(e) {
-//    if (typeof(e.layer.feature) == 'undefined') return false;
-
-//    toast = $mdToast.simple()
-//        .content(e.layer.feature.properties.title)
-//        .position('top right')
-//        .hideDelay(0)
-
-//    $mdToast.show(toast);
-//  });
-
-//  featureLayer.on('mouseout', function(e) {
-//    $mdToast.hide(toast);
-//  });
-//},
 
 var featureListener = function(featureLayer, map, scope, $mdToast) {
   var toast = null;
@@ -112,12 +92,9 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
       toast = $mdToast.simple()
           .content(e.layer.feature.properties.title)
           .position('top right')
-          .hideDelay(0)
+          .hideDelay(0);
 
       $mdToast.show(toast);
-    },
-    keyboard: function(e) {
-      console.log('keyboardyboard');
     },
     mouseout: function(e) {
       $mdToast.hide(toast);

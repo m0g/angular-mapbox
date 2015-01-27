@@ -7,10 +7,10 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     scope: true,
     replace: true,
     link: function(scope, element, attrs) {
+      var zoomControl = true;
+
       if (attrs.hasOwnProperty('zoomControl'))
-        var zoomControl = (attrs.zoomControl === 'true');
-      else
-        var zoomControl = true;
+        zoomControl = (attrs.zoomControl === 'true');
 
       scope.map = L.mapbox.map(element[0], attrs.mapId, {
         zoomControl: zoomControl
@@ -52,7 +52,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
       }
 
       if (!zoomControl) {
-        console.log('hi!');
         scope.map.dragging.disable();
         scope.map.touchZoom.disable();
         scope.map.doubleClickZoom.disable();
@@ -62,6 +61,10 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
       }
 
       L.tileLayer('http://10.11.12.14:1337/survey/20/tile/{z}/{x}/{y}').addTo(scope.map);
+
+      scope.$on('$destroy', function() {
+        scope.map.remove();
+      });
     },
     template: '<div class="angular-mapbox-map" ng-transclude></div>',
     controller: function($scope) {
@@ -74,15 +77,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
       $scope.getMap = this.getMap = function() {
         return _mapboxMap.promise;
       };
-
-      //$scope.back = function() {
-      //  $scope.show = false;
-
-      //  $scope.getMap().then(function(map) {
-      //    var region = parent.featureLayers[0];
-      //    map.fitBounds(region.getBounds());
-      //  });
-      //};
 
       if(L.MarkerClusterGroup) {
         $scope.clusterGroup = new L.MarkerClusterGroup();

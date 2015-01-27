@@ -109,7 +109,6 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 
             controller.$scope.featureLayers.push(featureLayer);
 
-            //featureHoverTooltip(featureLayer, $mdToast);
             featureListener(featureLayer, map, controller.$scope, $mdToast);
           });
         });
@@ -119,25 +118,6 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 }]);
 
 var regionWards = null;
-
-//var featureHoverTooltip = function(featureLayer, $mdToast) {
-//  var toast = null;
-
-//  featureLayer.on('mouseover', function(e) {
-//    if (typeof(e.layer.feature) == 'undefined') return false;
-
-//    toast = $mdToast.simple()
-//        .content(e.layer.feature.properties.title)
-//        .position('top right')
-//        .hideDelay(0)
-
-//    $mdToast.show(toast);
-//  });
-
-//  featureLayer.on('mouseout', function(e) {
-//    $mdToast.hide(toast);
-//  });
-//},
 
 var featureListener = function(featureLayer, map, scope, $mdToast) {
   var toast = null;
@@ -149,7 +129,7 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
       toast = $mdToast.simple()
           .content(e.layer.feature.properties.title)
           .position('top right')
-          .hideDelay(0)
+          .hideDelay(0);
 
       $mdToast.show(toast);
     },
@@ -168,9 +148,8 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
-
       var mask = e.layer.feature;
-      console.log(mask.geometry.type);
+
       mask.geometry.coordinates = [
         // the world
         [
@@ -210,16 +189,17 @@ angular.module('angularMapbox').directive('legend', function() {
     require: '^mapbox',
     scope: true,
     link: function(scope, element, attrs, controller) {
-      controller.getMap().then(function(map) {
-        map.legendControl.addLegend(getLegendHTML());
+      scope.$watch('legend', function() {
+        controller.getMap().then(function(map) {
+          if (typeof(scope.legend) != 'undefined')
+            map.legendControl.addLegend(getLegendHTML(scope.legend));
+        });
       });
     }
   }
 });
 
-var getLegendHTML = function() {
-  var responses = [{ color: '#f44336', content: 'yes' },
-                   { color: '#3f51b5', content: 'no' }],
+var getLegendHTML = function(responses) {
   labels = [];
 
   responses.forEach(function(response) {
@@ -241,10 +221,10 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
     scope: true,
     replace: true,
     link: function(scope, element, attrs) {
+      var zoomControl = true;
+
       if (attrs.hasOwnProperty('zoomControl'))
-        var zoomControl = (attrs.zoomControl === 'true');
-      else
-        var zoomControl = true;
+        zoomControl = (attrs.zoomControl === 'true');
 
       scope.map = L.mapbox.map(element[0], attrs.mapId, {
         zoomControl: zoomControl
@@ -286,7 +266,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
       }
 
       if (!zoomControl) {
-        console.log('hi!');
         scope.map.dragging.disable();
         scope.map.touchZoom.disable();
         scope.map.doubleClickZoom.disable();
@@ -294,9 +273,16 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
 
         if (scope.map.tap) scope.map.tap.disable();
       }
+
+      L.tileLayer('http://10.11.12.14:1337/survey/20/tile/{z}/{x}/{y}').addTo(scope.map);
+
+      scope.$on('$destroy', function() {
+        scope.map.remove();
+      });
     },
     template: '<div class="angular-mapbox-map" ng-transclude></div>',
     controller: function($scope) {
+
       $scope.markers = [];
       $scope.featureLayers = [];
       $scope.showBack = false;
@@ -305,15 +291,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
       $scope.getMap = this.getMap = function() {
         return _mapboxMap.promise;
       };
-
-      //$scope.back = function() {
-      //  $scope.show = false;
-
-      //  $scope.getMap().then(function(map) {
-      //    var region = parent.featureLayers[0];
-      //    map.fitBounds(region.getBounds());
-      //  });
-      //};
 
       if(L.MarkerClusterGroup) {
         $scope.clusterGroup = new L.MarkerClusterGroup();
