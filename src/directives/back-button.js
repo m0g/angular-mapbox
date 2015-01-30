@@ -23,6 +23,12 @@ angular.module('angularMapbox').directive('backButton', function() {
             if (index > 0) layer.clearLayers();
           });
 
+          console.log(parent);
+          if (parent.$parent.hasOwnProperty('region'))
+            //parent.$parent.$apply(function() {
+              parent.$parent.region = null;
+            //});
+
           map.fitBounds(region.getBounds());
         });
       };

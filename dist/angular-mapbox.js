@@ -26,6 +26,12 @@ angular.module('angularMapbox').directive('backButton', function() {
             if (index > 0) layer.clearLayers();
           });
 
+          console.log(parent);
+          if (parent.$parent.hasOwnProperty('region'))
+            //parent.$parent.$apply(function() {
+              parent.$parent.region = null;
+            //});
+
           map.fitBounds(region.getBounds());
         });
       };
@@ -96,20 +102,27 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
+          console.log('geojson has been update');
+
           controller.getMap().then(function(map) {
-            var featureLayer = L.mapbox.featureLayer(scope.geojson);
+            if (controller.$scope.featureLayers.length > 0) {
+              var featureLayer = controller.$scope.featureLayers[0];
+              featureLayer.setGeoJSON(scope.geojson);
+            } else {
+              var featureLayer = L.mapbox.featureLayer(scope.geojson);
 
-            featureLayer.addTo(map);
+              featureLayer.addTo(map);
 
-            try {
-              map.fitBounds(featureLayer.getBounds());
-            } catch(e) {
-              return false;
+              try {
+                map.fitBounds(featureLayer.getBounds());
+              } catch(e) {
+                return false;
+              }
+
+              controller.$scope.featureLayers.push(featureLayer);
+
+              featureListener(featureLayer, map, controller.$scope, $mdToast);
             }
-
-            controller.$scope.featureLayers.push(featureLayer);
-
-            featureListener(featureLayer, map, controller.$scope, $mdToast);
           });
         });
       }
@@ -173,7 +186,13 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
 
       regionWards = L.mapbox.featureLayer(url);
       regionWards.addTo(map);
+
       map.fitBounds(region.getBounds());
+
+      if (scope.$parent.hasOwnProperty('region'))
+        scope.$parent.$apply(function() {
+          scope.$parent.region = e.layer.feature.properties.id;
+        });
 
       scope.featureLayers.push(maskLayer);
       scope.featureLayers.push(regionWards);
@@ -273,8 +292,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
 
         if (scope.map.tap) scope.map.tap.disable();
       }
-
-      L.tileLayer('http://10.11.12.14:1337/survey/20/tile/{z}/{x}/{y}').addTo(scope.map);
 
       scope.$on('$destroy', function() {
         scope.map.remove();

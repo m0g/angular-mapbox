@@ -60,8 +60,6 @@ angular.module('angularMapbox').directive('mapbox', function($compile, $q) {
         if (scope.map.tap) scope.map.tap.disable();
       }
 
-      L.tileLayer('http://10.11.12.14:1337/survey/20/tile/{z}/{x}/{y}').addTo(scope.map);
-
       scope.$on('$destroy', function() {
         scope.map.remove();
       });
