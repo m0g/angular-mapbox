@@ -51,9 +51,11 @@ angular.module('angularMapbox').directive('backButton', function() {
             if (index > 0) layer.clearLayers();
           });
 
-          console.log(parent);
           if (parent.$parent.hasOwnProperty('region'))
             parent.$parent.region = null;
+
+          if (parent.$parent.hasOwnProperty('regionData'))
+            parent.$parent.regionData = {};
 
           map.fitBounds(region.getBounds());
         });
