@@ -1,4 +1,4 @@
-angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function($mdToast) {
+angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', function($mdToast, $http) {
   return {
     restrict: 'E',
     transclude: true,
@@ -78,7 +78,7 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 
               controller.$scope.featureLayers.push(featureLayer);
 
-              featureListener(featureLayer, map, controller.$scope, $mdToast);
+              featureListener(featureLayer, map, controller.$scope, $mdToast, $http);
             }
           });
         });
@@ -87,9 +87,9 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
   };
 }]);
 
-var regionWards = null;
+var regionDistricts = null;
 
-var featureListener = function(featureLayer, map, scope, $mdToast) {
+var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
   var toast = null;
 
   featureLayer.on({
@@ -139,20 +139,30 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
         weight: 0
       }).addTo(map);
 
-      if (regionWards) regionWards.clearLayers();
+      if (regionDistricts) regionDistricts.clearLayers();
 
-      regionWards = L.mapbox.featureLayer(url);
-      regionWards.addTo(map);
+      $http.get(url).success(function(geojson, status, headers, config) {
+        regionDistricts = L.mapbox.featureLayer(geojson);
+        regionDistricts.addTo(map);
 
-      map.fitBounds(region.getBounds());
+        map.fitBounds(region.getBounds());
 
-      if (scope.$parent.hasOwnProperty('region'))
-        scope.$parent.$apply(function() {
-          scope.$parent.region = e.layer.feature.properties.id;
-        });
+        if (scope.$parent.hasOwnProperty('region'))
+          scope.$parent.$apply(function() {
+            scope.$parent.region = e.layer.feature.properties.id;
+          });
 
-      scope.featureLayers.push(maskLayer);
-      scope.featureLayers.push(regionWards);
+        if (scope.$parent.hasOwnProperty('regionGeojson'))
+          //scope.$parent.$apply(function() {
+            scope.$parent.regionGeojson = geojson;
+          //});
+
+        scope.featureLayers.push(maskLayer);
+        scope.featureLayers.push(regionDistricts);
+
+      }).error(function(data, status, headers, config) {
+        console.log('http error');
+      });
 
       return false;
     }
