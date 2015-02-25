@@ -141,8 +141,8 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
 
       if (regionDistricts) regionDistricts.clearLayers();
 
-      $http.get(url).success(function(geojson, status, headers, config) {
-        regionDistricts = L.mapbox.featureLayer(geojson);
+      $http.get(url).success(function(data, status, headers, config) {
+        regionDistricts = L.mapbox.featureLayer(data.geojson);
         regionDistricts.addTo(map);
 
         map.fitBounds(region.getBounds());
@@ -152,10 +152,8 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
             scope.$parent.region = e.layer.feature.properties.id;
           });
 
-        if (scope.$parent.hasOwnProperty('regionGeojson'))
-          //scope.$parent.$apply(function() {
-            scope.$parent.regionGeojson = geojson;
-          //});
+        if (scope.$parent.hasOwnProperty('regionData'))
+          scope.$parent.regionData = data;
 
         scope.featureLayers.push(maskLayer);
         scope.featureLayers.push(regionDistricts);
