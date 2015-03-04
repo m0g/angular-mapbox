@@ -112,9 +112,9 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
 
       if (typeof(e.layer.feature) == 'undefined') return false;
 
-      scope.$apply(function() {
-        scope.showBack = true;
-      });
+      //scope.$apply(function() {
+      //  scope.showBack = true;
+      //});
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
@@ -157,6 +157,10 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
 
         scope.featureLayers.push(maskLayer);
         scope.featureLayers.push(regionDistricts);
+
+        scope.$apply(function() {
+          scope.showBack = true;
+        });
 
       }).error(function(data, status, headers, config) {
         console.log('http error');

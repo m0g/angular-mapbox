@@ -54,9 +54,11 @@ angular.module('angularMapbox').directive('backButton', function() {
             if (index > 0) layer.clearLayers();
           });
 
-          console.log(parent);
           if (parent.$parent.hasOwnProperty('region'))
             parent.$parent.region = null;
+
+          if (parent.$parent.hasOwnProperty('regionData'))
+            parent.$parent.regionData = {};
 
           map.fitBounds(region.getBounds());
         });
@@ -67,7 +69,7 @@ angular.module('angularMapbox').directive('backButton', function() {
   }
 });
 
-angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function($mdToast) {
+angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', function($mdToast, $http) {
   return {
     restrict: 'E',
     transclude: true,
@@ -147,7 +149,7 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
 
               controller.$scope.featureLayers.push(featureLayer);
 
-              featureListener(featureLayer, map, controller.$scope, $mdToast);
+              featureListener(featureLayer, map, controller.$scope, $mdToast, $http);
             }
           });
         });
@@ -156,9 +158,9 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', function(
   };
 }]);
 
-var regionWards = null;
+var regionDistricts = null;
 
-var featureListener = function(featureLayer, map, scope, $mdToast) {
+var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
   var toast = null;
 
   featureLayer.on({
@@ -181,9 +183,9 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
 
       if (typeof(e.layer.feature) == 'undefined') return false;
 
-      scope.$apply(function() {
-        scope.showBack = true;
-      });
+      //scope.$apply(function() {
+      //  scope.showBack = true;
+      //});
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
@@ -208,20 +210,32 @@ var featureListener = function(featureLayer, map, scope, $mdToast) {
         weight: 0
       }).addTo(map);
 
-      if (regionWards) regionWards.clearLayers();
+      if (regionDistricts) regionDistricts.clearLayers();
 
-      regionWards = L.mapbox.featureLayer(url);
-      regionWards.addTo(map);
+      $http.get(url).success(function(data, status, headers, config) {
+        regionDistricts = L.mapbox.featureLayer(data.geojson);
+        regionDistricts.addTo(map);
 
-      map.fitBounds(region.getBounds());
+        map.fitBounds(region.getBounds());
 
-      if (scope.$parent.hasOwnProperty('region'))
-        scope.$parent.$apply(function() {
-          scope.$parent.region = e.layer.feature.properties.id;
+        if (scope.$parent.hasOwnProperty('region'))
+          scope.$parent.$apply(function() {
+            scope.$parent.region = e.layer.feature.properties.id;
+          });
+
+        if (scope.$parent.hasOwnProperty('regionData'))
+          scope.$parent.regionData = data;
+
+        scope.featureLayers.push(maskLayer);
+        scope.featureLayers.push(regionDistricts);
+
+        scope.$apply(function() {
+          scope.showBack = true;
         });
 
-      scope.featureLayers.push(maskLayer);
-      scope.featureLayers.push(regionWards);
+      }).error(function(data, status, headers, config) {
+        console.log('http error');
+      });
 
       return false;
     }
