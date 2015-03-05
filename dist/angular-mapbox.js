@@ -130,7 +130,8 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
-          console.log('geojson has been update');
+          console.log('geojson has been update', scope.geojson);
+          if (scope.geojson.length == 0) return false;
 
           controller.getMap().then(function(map) {
             if (controller.$scope.featureLayers.length > 0) {
@@ -141,11 +142,19 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
 
               featureLayer.addTo(map);
 
-              try {
+              console.log('BOUNDS', featureLayer.getBounds(), (featureLayer.getBounds()));
+
+              if (featureLayer.getBounds().hasOwnProperty('_northEast'))
+              //if (featureLayer.getBounds())
                 map.fitBounds(featureLayer.getBounds());
-              } catch(e) {
-                return false;
-              }
+
+              //try {
+              //  console.log('FIT BOUNDS', featureLayer.getBounds());
+              //  map.fitBounds(featureLayer.getBounds());
+              //} catch(e) {
+              //  console.log('fail to fit bounds');
+              //  return false;
+              //}
 
               controller.$scope.featureLayers.push(featureLayer);
 
