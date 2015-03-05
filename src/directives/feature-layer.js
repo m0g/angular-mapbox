@@ -96,25 +96,16 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
     mouseover: function(e) {
       if (typeof(e.layer.feature) == 'undefined') return false;
 
-      toast = $mdToast.simple()
-          .content(e.layer.feature.properties.title)
-          .position('top right')
-          .hideDelay(0);
-
-      $mdToast.show(toast);
+      e.layer.openPopup();
     },
-    mouseout: function(e) {
-      $mdToast.hide(toast);
-    },
+    //mouseout: function(e) {
+    //  $mdToast.hide(toast);
+    //},
     click: function(e) {
       // Force the popup to close
       e.layer.closePopup();
 
       if (typeof(e.layer.feature) == 'undefined') return false;
-
-      //scope.$apply(function() {
-      //  scope.showBack = true;
-      //});
 
       var url = e.layer.feature.properties.url;
       var region = L.mapbox.featureLayer(e.layer.feature);
