@@ -131,30 +131,19 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
           console.log('geojson has been update', scope.geojson);
-          if (scope.geojson.length == 0) return false;
+          if (!scope.geojson || scope.geojson.length == 0) return false;
 
           controller.getMap().then(function(map) {
             if (controller.$scope.featureLayers.length > 0) {
               var featureLayer = controller.$scope.featureLayers[0];
               featureLayer.setGeoJSON(scope.geojson);
+
             } else {
               var featureLayer = L.mapbox.featureLayer(scope.geojson);
-
               featureLayer.addTo(map);
 
-              console.log('BOUNDS', featureLayer.getBounds(), (featureLayer.getBounds()));
-
               if (featureLayer.getBounds().hasOwnProperty('_northEast'))
-              //if (featureLayer.getBounds())
                 map.fitBounds(featureLayer.getBounds());
-
-              //try {
-              //  console.log('FIT BOUNDS', featureLayer.getBounds());
-              //  map.fitBounds(featureLayer.getBounds());
-              //} catch(e) {
-              //  console.log('fail to fit bounds');
-              //  return false;
-              //}
 
               controller.$scope.featureLayers.push(featureLayer);
 
@@ -178,9 +167,6 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
 
       e.layer.openPopup();
     },
-    //mouseout: function(e) {
-    //  $mdToast.hide(toast);
-    //},
     click: function(e) {
       // Force the popup to close
       e.layer.closePopup();
@@ -228,10 +214,7 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
 
         scope.featureLayers.push(maskLayer);
         scope.featureLayers.push(regionDistricts);
-
-        scope.$apply(function() {
-          scope.showBack = true;
-        });
+        scope.showBack = true;
 
       }).error(function(data, status, headers, config) {
         console.log('http error');
