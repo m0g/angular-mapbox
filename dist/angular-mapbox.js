@@ -69,7 +69,8 @@ angular.module('angularMapbox').directive('backButton', function() {
   }
 });
 
-angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', function($mdToast, $http) {
+angular.module('angularMapbox').directive('featureLayer',
+['$mdToast', '$http', 'questionRegion', function($mdToast, $http, questionRegion) {
   return {
     restrict: 'E',
     transclude: true,
@@ -130,16 +131,17 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
 
       } else if(scope.geojson) {
         scope.$watch('geojson', function() {
-          console.log('geojson has been update', scope.geojson);
-          if (!scope.geojson || scope.geojson.length == 0) return false;
+          if (!scope.geojson || scope.geojson.length === 0) return false;
 
           controller.getMap().then(function(map) {
+            var featureLayer = {};
+
             if (controller.$scope.featureLayers.length > 0) {
-              var featureLayer = controller.$scope.featureLayers[0];
+              featureLayer = controller.$scope.featureLayers[0];
               featureLayer.setGeoJSON(scope.geojson);
 
             } else {
-              var featureLayer = L.mapbox.featureLayer(scope.geojson);
+              featureLayer = L.mapbox.featureLayer(scope.geojson);
               featureLayer.addTo(map);
 
               if (featureLayer.getBounds().hasOwnProperty('_northEast'))
@@ -147,7 +149,8 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
 
               controller.$scope.featureLayers.push(featureLayer);
 
-              featureListener(featureLayer, map, controller.$scope, $mdToast, $http);
+              featureListener(featureLayer, map, controller.$scope,
+                              $mdToast, $http, questionRegion);
             }
           });
         });
@@ -158,14 +161,24 @@ angular.module('angularMapbox').directive('featureLayer', ['$mdToast', '$http', 
 
 var regionDistricts = null;
 
-var featureListener = function(featureLayer, map, scope, $mdToast, $http) {
+var featureListener = function(featureLayer, map, scope, $mdToast, $http, questionRegion) {
   var toast = null;
 
   featureLayer.on({
     mouseover: function(e) {
       if (typeof(e.layer.feature) == 'undefined') return false;
 
-      e.layer.openPopup();
+      var feature = e.layer.feature;
+
+      questionRegion.getHTML(feature.properties.urlRegion, function(err, popupContent) {
+        e.layer.bindPopup(popupContent,{
+          closeButton: false,
+          minWidth: 320
+        });
+
+        e.layer.openPopup();
+      });
+
     },
     click: function(e) {
       // Force the popup to close
