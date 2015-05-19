@@ -99,7 +99,7 @@ var featureListener = function(featureLayer, map, scope, $mdToast, $http, questi
 
       var feature = e.layer.feature;
 
-      questionRegion.getHTML(feature.properties.urlRegion, function(err, popupContent) {
+      questionRegion.getHTML(feature.properties, function(err, popupContent) {
         e.layer.bindPopup(popupContent,{
           closeButton: false,
           minWidth: 320
